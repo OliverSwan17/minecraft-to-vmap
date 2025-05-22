@@ -5,6 +5,7 @@ import uuid
 import argparse
 import hashlib
 import os
+import subprocess
 
 def generate_new_uid():
     return str(uuid.uuid4())
@@ -85,8 +86,10 @@ def main():
     args = parser.parse_args()
     
     try:
-        output_dir = 'out/dmx'
-        os.makedirs(output_dir, exist_ok=True)
+        output_dir_dmx = 'out/dmx'
+        output_dir_vmap = 'out/vmap'
+        os.makedirs(output_dir_dmx, exist_ok=True)
+        os.makedirs(output_dir_vmap, exist_ok=True)
         
         with open(args.template, 'r', encoding='utf-8') as f:
             template_content = f.read()
@@ -111,15 +114,21 @@ def main():
         final_content = insert_meshes_after_nav_data(template_content, mesh_insertions)
         
         if args.output:
-            output_filename = os.path.join(output_dir, args.output)
+            output_filename = os.path.join(output_dir_dmx, args.output)
         else:
             hashed_filename = generate_output_filename(coordinates)
-            output_filename = os.path.join(output_dir, hashed_filename)
+            output_filename = os.path.join(output_dir_dmx, hashed_filename)
         
         with open(output_filename, 'w', encoding='utf-8') as f:
             f.write(final_content)
         
-        print(f"Success: {output_filename}")
+        # Convert to binary vmap
+        base_name = os.path.splitext(os.path.basename(output_filename))[0]
+        vmap_output = os.path.join(output_dir_vmap, f"{base_name}.vmap")
+        
+        subprocess.run(['dmxconvert', '-i', output_filename, '-o', vmap_output, '-oe', 'binary'], check=True)
+        
+        print(f"Success: {output_filename} -> {vmap_output}")
         
     except Exception as e:
         print(f"Failed: {e}")
