@@ -1,1 +1,2 @@
 A tool that creates source 2 vmap files based off minecraft world saves.
+dmxconvert -i input_file.vmap -o output_file.dmx -oe keyvalues2

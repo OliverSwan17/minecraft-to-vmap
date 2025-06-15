@@ -1,1 +1,3 @@
-out
+out/*
+minecraft_saves/*
+assets/*
